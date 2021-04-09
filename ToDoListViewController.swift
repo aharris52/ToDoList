@@ -10,7 +10,9 @@ import UIKit
 
 class ToDoListViewController: UITableViewController {
 
-    var itemArray = ["Bears", "Beets", "Battlestar Galactica"]
+    private var defaults = UserDefaults.standard
+    
+    private lazy var itemArray = populateItems()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,14 +48,14 @@ class ToDoListViewController: UITableViewController {
         
     }
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
         var textField = UITextField()
         let alert = UIAlertController(title: "Add new ToDoey Item", message: "", preferredStyle: .alert)
-        let action = UIAlertAction(title: "Add Item", style: .default){
-            (action) in
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) { [weak self] (action) in
             print("Success!")
-            print(textField.text)
-            self.itemArray.append(textField.text!)
-            self.tableView.reloadData()
+            //print(textField.text)
+            self?.addItem(textField.text)
         }
         
         alert.addTextField { (alertTextField) in
@@ -63,6 +65,27 @@ class ToDoListViewController: UITableViewController {
         }
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
+    }
+    
+}
+
+private extension ToDoListViewController {
+    
+    func addItem(_ item: String?) {
+        guard let item = item else {
+            return
+        }
+        itemArray.append(item)
+        // persist the data using UserDefaults
+        defaults.set(self.itemArray, forKey: "TodoListArray")
+        tableView.reloadData()
+    }
+    
+    func populateItems() -> [String] {
+        guard let items = defaults.array(forKey: "TodoListArray") as? [String] else {
+            return ["Bears", "Beets", "Battlestar Galactica"]
+        }
+        return items
     }
     
 }
